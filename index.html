@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Momentos</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #eef1f5;
+      margin: 0;
+    }
+
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 15px;
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      background: #3498db;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .evento {
+      background: #fff;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    img {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>Meus Momentos</header>
+
+  <!-- LOGIN -->
+  <div class="container" id="loginDiv">
+    <h3>Login</h3>
+    <input type="text" id="user" placeholder="Usuário">
+    <input type="password" id="pass" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <button onclick="mostrarRegistro()">Registrar</button>
+  </div>
+
+  <!-- CADASTRO -->
+  <div class="container" id="registroDiv" style="display:none">
+    <h3>Cadastro</h3>
+    <input type="text" id="novoUser" placeholder="Novo usuário">
+    <input type="password" id="novaPass" placeholder="Nova senha">
+    <button onclick="registrar()">Cadastrar</button>
+    <button onclick="voltarLogin()">Voltar</button>
+  </div>
+
+  <!-- APP -->
+  <div class="container" id="app" style="display:none">
+    <h3>Adicionar Evento</h3>
+    <input type="text" id="nome" placeholder="Nome">
+    <input type="date" id="data">
+    <input type="text" id="img" placeholder="URL da imagem">
+    <button onclick="addEvento()">Salvar</button>
+
+    <h3>Dashboard</h3>
+    <p id="total"></p>
+
+    <div id="lista"></div>
+  </div>
+
+  <script>
+    let eventos = JSON.parse(localStorage.getItem('eventos')) || [];
+
+    // ===== LOGIN (SEM ADMIN) =====
+    function login() {
+      let u = document.getElementById('user').value;
+      let p = document.getElementById('pass').value;
+
+      let userSalvo = localStorage.getItem('usuario');
+      let passSalva = localStorage.getItem('senha');
+
+      if (!userSalvo || !passSalva) {
+        alert('Você precisa se registrar primeiro!');
+        return;
+      }
+
+      if (u === userSalvo && p === passSalva) {
+        document.getElementById('loginDiv').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        render();
+      } else {
+        alert('Usuário ou senha incorretos!');
+      }
+    }
+
+    // ===== CADASTRO =====
+    function mostrarRegistro() {
+      document.getElementById('loginDiv').style.display = 'none';
+      document.getElementById('registroDiv').style.display = 'block';
+    }
+
+    function voltarLogin() {
+      document.getElementById('registroDiv').style.display = 'none';
+      document.getElementById('loginDiv').style.display = 'block';
+    }
+
+    function registrar() {
+      let user = document.getElementById('novoUser').value;
+      let pass = document.getElementById('novaPass').value;
+
+      if (!user || !pass) {
+        alert('Preencha tudo!');
+        return;
+      }
+
+      localStorage.setItem('usuario', user);
+      localStorage.setItem('senha', pass);
+
+      alert('Usuário cadastrado com sucesso!');
+      voltarLogin();
+    }
+
+    // ===== EVENTOS =====
+    function salvar() {
+      localStorage.setItem('eventos', JSON.stringify(eventos));
+    }
+
+    function addEvento() {
+      let nome = document.getElementById('nome').value;
+      let data = document.getElementById('data').value;
+      let img = document.getElementById('img').value;
+
+      if (!nome || !data) {
+        alert('Preencha tudo');
+        return;
+      }
+
+      eventos.push({ nome, data, img });
+      salvar();
+      render();
+    }
+
+    function remover(i) {
+      eventos.splice(i, 1);
+      salvar();
+      render();
+    }
+
+    function render() {
+      let lista = document.getElementById('lista');
+      lista.innerHTML = '';
+
+      document.getElementById('total').innerText =
+        'Total de eventos: ' + eventos.length;
+
+      eventos.forEach((e, i) => {
+        let div = document.createElement('div');
+        div.className = 'evento';
+        div.innerHTML = `
+          <b>${e.nome}</b><br>
+          ${e.data}
+          ${e.img ? `<img src="${e.img}">` : ''}
+          <button onclick="remover(${i})">Excluir</button>
+        `;
+        lista.appendChild(div);
+      });
+    }
+  </script>
+
+</body>
+
+</html>
